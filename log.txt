@@ -1,0 +1,68 @@
+**************************************************************
+A
+**************************************************************
+Restarting from scratch.
+BMAX = 10000
+                       
+HYPOTHESIS:
+Starting from a bare minimum and experimenting with hyper parameters
+
+MODEL:
+A : INPUT->FC1->RELU->FC_OUT->OUTPUT
+LOSS : MSE
+
+LEARNING:   INIT_WEIGHT     = FC1 : KAIMING
+                              OUT : XAVIER
+            WIDTH           = 50
+            DEPTH           = 1 + 1
+            WEIGHT_DECAY    = NONE
+            LR              = 1E-5
+            UPDATE_FREQ     = 18 MONTHS
+            MEMORY          = 24 MONTHS
+            ITERATION       = 50
+            BATCH_SIZE      = 32
+            EPSILON         = 0.9             
+            GAMMA           = 0.9                
+            LAMBDA          = 0.95
+            
+TRAINING:   TOKYO[2009]
+            BATTERY_RESET    = 0 %
+            REWARD_FUNC      = TYPE1
+                               violation_penalty = 3
+                               battery high limit penalty = -2
+                               battery low  limit penalty = -4
+                               R = [-1 to 2] bell curve
+            REWARD_BROADCAST = TRUE
+            
+            LAST TRAINING ITERATIONS = N/A
+            EPSILON                  = N/A
+            LR                       = N/A
+            
+TESTING:    TOKYO[2000-2018]
+            GREEDY POLICY
+
+
+***************************
+RESULTS
+***************************
+SEED: 161
+YEAR	AVG_RWD		VIOLATIONS
+                    DAY	BATT
+2008	 1.26		0	 0
+2009	 1.21		0	 0
+2010	 1.24		0	 0
+2011	 1.28		0	 0
+2012	 1.22		0	 0
+2013	 1.26		0	 0
+2014	 1.21		0	 0
+2015	 1.24		0	 0
+2016	 1.23		0	 0
+2017	 1.24		0	 0
+
+
+***************************
+DISCUSSION AND CONCLUSIONS
+***************************
+Training only with TOKYO 2010 gives really good performance in all years - no violations at all.
+However during training, there are quite a number of violations due to a "high" EPSILON
+Weights don't seem to explode
