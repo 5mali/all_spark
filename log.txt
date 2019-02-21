@@ -1,13 +1,19 @@
 A*
 |
+|------>A_WT_DECAY: L2 Loss (1e-2)--->XXXXXXXXXX----------------------------------------------SEED TEST: ????
+|
 |--> A1: EPSILON SCHEDULING--------------------> did not help
 |--> A1_alt: Alternate EPSILON SCHEDULING-O-----> did not help
 |--> A2*: EPSILON = 0.8------------------------> much better performance in terms of violations----------------------SEED TEST: FAIL
+|    |--> A2_WT_DECAY*: L2 Loss (1e-2)--->XXXXXXXXXXXX---------------------------------------------------------------SEED TEST: ????
 |--> A3: EPSILON = 0.98------------------------> did not help at all
 |--> A4: EPSILON = 0.7 ------------------------> better than A3, not better than A2
 |
 |
 B*-- EPSILON = 0.8, TRAIN: TOKYO[2000-2010]----> much better performance than A2-------------------------------------SEED TEST: FAIL
+|
+|------>B_WT_DECAY: WIDTH = 100, L2 Loss (1e-2)---> much better than B*----------------------------------------------SEED TEST: ????
+|
 |--> B1:  WIDTH = 20------> unable to learn, weights explode
 |--> B2*: WIDTH = 100----> higher terminal rewards than B, more dynamic range in battery levels----------------------SEED TEST: FAIL
 |    |
@@ -20,7 +26,7 @@ B*-- EPSILON = 0.8, TRAIN: TOKYO[2000-2010]----> much better performance than A2
 |--> B7:  WIDTH = 100, L2 Loss (1e-5)--> L2 loss too little to cause any difference. Better than B6, worse than B2
 |--> B8*: WIDTH = 100, L2 Loss (1e-4)--> higher terminal rewards than B2, spikes still present------------------------SEED TEST: FAIL
 |    |
-|    |--> B8_WT_DECAY*: WIDTH = 100, L2 Loss (1e-2)--->EQUIVALENT TO B2_WT_DECAY, much better than B8-----------------SEED TEST: ????
+|    |--> B8_WT_DECAY*: WIDTH = 100, L2 Loss (1e-2)--->EQUIVALENT TO B2_WT_DECAY, much better than B8-----------------SEED TEST: 5/10
 |
 |--> B9:  WIDTH = 100, L2 Loss (1e-3)--> bad performance, spikes still present
 |--> B10: WIDTH = 100, LR = 1e-6)------> learning is too slow
@@ -33,7 +39,7 @@ B*-- EPSILON = 0.8, TRAIN: TOKYO[2000-2010]----> much better performance than A2
 |--> B12:  WIDTH = 100, L2 Loss (1e-4), EPSILON SCHEDULING-----------> no good performance
 |--> B13*: WIDTH = 100, L2 Loss (1e-4), LR SCHEDULING [3,0,2]--------> lower average reward but good performance------SEED TEST: FAIL
 |     |
-|     |-->B13_WT_DECAY*: WIDTH = 100, L2 Loss (1e-2), LR SCHEDULING [3,0,2]---> much better than B13------------------SEED TEST: ????
+|     |-->B13_WT_DECAY*: WIDTH = 100, L2 Loss (1e-2), LR SCHEDULING [3,0,2]---> much better performance than B13------SEED TEST: 5/10
 |
 |--> B14:  WIDTH = 100, L2 Loss (1e-4), EPSILON and LR SCHEDULING----> Better than B12 but not as good as B13
 |--> B15:  WIDTH = 100, L2 Loss (1e-4), LR Sawtooth SCHEDULING-------> satisfactory but no better than B13
