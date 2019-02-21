@@ -1,23 +1,408 @@
 A*
 |
 |--> A1: EPSILON SCHEDULING--------------------> did not help
+|--> A1_alt: Alternate EPSILON SCHEDULING-O-----> did not help
 |--> A2*: EPSILON = 0.8------------------------> much better performance in terms of violations
 |--> A3: EPSILON = 0.98------------------------> did not help at all
 |--> A4: EPSILON = 0.7 ------------------------> better than A3, not better than A2
 |
 |
 B*-- EPSILON = 0.8, TRAIN: TOKYO[2000-2010]----> much better performance than A2
-|--> B1: WIDTH = 20------>
-|--> B2: WIDTH = 100----->
-|--> B3: SIGMOID (50)---->
-|-->
-|-->
-|-->
+|--> B1: WIDTH = 20------> unable to learn, weights explode
+|--> B2*: WIDTH = 100----> higher terminal rewards than B, more dynamic range in battery levels
+|--> B3: SIGMOID (50)----> better than B1 but much worse than B2, longer to train
+|--> B4: SIGMOID (100)---> not good at all
+|--> B5: WIDTH = 100, HUBER LOSS------> not good at all
+|--> B6: WIDTH = 100, L2 Loss (1e-6)--> L2 loss too little to cause any difference. Not good
+|--> B7: WIDTH = 100, L2 Loss (1e-5)--> L2 loss too little to cause any difference. Better than B6, worse than B2
+|--> B8*: WIDTH = 100, L2 Loss (1e-4)--> higher terminal rewards than B2, spikes still present
+|--> B9: WIDTH = 100, L2 Loss (1e-3)--> bad performance, spikes still present
+|--> B10:WIDTH = 100, LR = 1e-6)------> learning is too slow
+|--> B11:WIDTH = 100, LR = 1e-5)------> bad performance
+|
+|--> B8A: WIDTH = 100, L2 Loss(1e-4), LR = 1e-5---> no spikes but bad performance, however better than B11
+|--> B8B: WIDTH = 100, L2 Loss(1e-4), LR = 1e-3---> lots of spikes with weight explosion, very bad performance
+|--> B8C: WIDTH = 100, L2 Loss(NONE), LR = 1e-3---> heavy weight expolision, very bad performance
+|
+|--> B12: EPSILON SCHEDULING-----------> no good performance
+|--> B13*: LR SCHEDULING---------------> lower average reward but good performance
+|--> B14: EPSILON and LR SCHEDULING----> Better than B12 but not as good as B13
 
+C
 |
 |
+**************************************************************
+B13
+**************************************************************
+                       
+HYPOTHESIS:
+Schedule LR rates so that the weights don't blow up too quickly
+
+MODEL:
+B13 : INPUT->FC1->RELU->FC_OUT->OUTPUT
+LOSS : MSE
+
+LEARNING:   INIT_WEIGHT     = FC1 : KAIMING
+                              OUT : XAVIER
+            WIDTH           = 100
+            DEPTH           = 1 + 1
+            WEIGHT_DECAY    = 1e-4
+            LR              = (0.3 to 1)*1e-04
+            UPDATE_FREQ     = 18 MONTHS
+            MEMORY          = 24 MONTHS
+            ITERATION       = 50
+            BATCH_SIZE      = 32
+            EPSILON         = 0.8             
+            GAMMA           = 0.9                
+            LAMBDA          = 0.95
+            
+TRAINING:   TOKYO[2000-2010]
+            BATTERY_RESET    = 0 %
+            REWARD_FUNC      = TYPE1
+                               violation_penalty = 3
+                               battery high limit penalty = -2
+                               battery low  limit penalty = -4
+                               R = [-1 to 2] bell curve
+            REWARD_BROADCAST = TRUE
+            
+            LAST TRAINING ITERATIONS = N/A
+            EPSILON                  = N/A
+            LR                       = N/A
+            
+TESTING:    TOKYO[2000-2018]
+            GREEDY POLICY
 
 
+***************************
+RESULTS
+***************************
+SEED: 161
+YEAR	AVG_RWD		VIOLATIONS
+                    DAY	BATT
+2000	 0.89		0	 0
+2001	 0.92		0	 0
+2002	 0.91		0	 0
+2003	 0.8		3	 0
+2004	 0.89		1	 0
+2005	 0.95		0	 0
+2006	 0.88		0	 0
+2007	 0.96		1	 0
+2008	 0.92		0	 0
+2009	 0.81		0	 0
+2010	 0.9		0	 0
+2011	 1.02		0	 0
+2012	 0.89		0	 0
+2013	 1.0		0	 0
+2014	 0.86		0	 0
+2015	 0.91		0	 0
+2016	 0.89		0	 0
+2017	 0.87		0	 0
+
+
+***************************
+DISCUSSION AND CONCLUSIONS
+***************************
+There's a higher average terminal reward comparable to A2 (higher than B2)
+
+
+**************************************************************
+B8
+**************************************************************
+                       
+HYPOTHESIS:
+Adding Weight Regularization using Smooth L2 loss
+
+MODEL:
+B2 : INPUT->FC1->RELU->FC_OUT->OUTPUT
+LOSS : MSE
+
+LEARNING:   INIT_WEIGHT     = FC1 : KAIMING
+                              OUT : XAVIER
+            WIDTH           = 100
+            DEPTH           = 1 + 1
+            WEIGHT_DECAY    = 1e-4
+            LR              = 1e-4
+            UPDATE_FREQ     = 18 MONTHS
+            MEMORY          = 24 MONTHS
+            ITERATION       = 50
+            BATCH_SIZE      = 32
+            EPSILON         = 0.8             
+            GAMMA           = 0.9                
+            LAMBDA          = 0.95
+            
+TRAINING:   TOKYO[2000-2010]
+            BATTERY_RESET    = 0 %
+            REWARD_FUNC      = TYPE1
+                               violation_penalty = 3
+                               battery high limit penalty = -2
+                               battery low  limit penalty = -4
+                               R = [-1 to 2] bell curve
+            REWARD_BROADCAST = TRUE
+            
+            LAST TRAINING ITERATIONS = N/A
+            EPSILON                  = N/A
+            LR                       = N/A
+            
+TESTING:    TOKYO[2000-2018]
+            GREEDY POLICY
+
+
+***************************
+RESULTS
+***************************
+SEED: 161
+YEAR	AVG_RWD		VIOLATIONS
+                    DAY	BATT
+2000	 0.89		0	 0
+2001	 0.92		0	 0
+2002	 0.91		0	 0
+2003	 0.8		3	 0
+2004	 0.89		1	 0
+2005	 0.95		0	 0
+2006	 0.88		0	 0
+2007	 0.96		1	 0
+2008	 0.92		0	 0
+2009	 0.81		0	 0
+2010	 0.9		0	 0
+2011	 1.02		0	 0
+2012	 0.89		0	 0
+2013	 1.0		0	 0
+2014	 0.86		0	 0
+2015	 0.91		0	 0
+2016	 0.89		0	 0
+2017	 0.87		0	 0
+
+
+***************************
+DISCUSSION AND CONCLUSIONS
+***************************
+There's a higher average terminal reward comparable to A2 (higher than B2)
+
+
+**************************************************************
+B2
+**************************************************************
+                       
+HYPOTHESIS:
+Increasing NN Width to see if it enhances performance.
+
+MODEL:
+B2 : INPUT->FC1->RELU->FC_OUT->OUTPUT
+LOSS : MSE
+
+LEARNING:   INIT_WEIGHT     = FC1 : KAIMING
+                              OUT : XAVIER
+            WIDTH           = 100
+            DEPTH           = 1 + 1
+            WEIGHT_DECAY    = NONE
+            LR              = 1e-4
+            UPDATE_FREQ     = 18 MONTHS
+            MEMORY          = 24 MONTHS
+            ITERATION       = 50
+            BATCH_SIZE      = 32
+            EPSILON         = 0.8             
+            GAMMA           = 0.9                
+            LAMBDA          = 0.95
+            
+TRAINING:   TOKYO[2000-2010]
+            BATTERY_RESET    = 0 %
+            REWARD_FUNC      = TYPE1
+                               violation_penalty = 3
+                               battery high limit penalty = -2
+                               battery low  limit penalty = -4
+                               R = [-1 to 2] bell curve
+            REWARD_BROADCAST = TRUE
+            
+            LAST TRAINING ITERATIONS = N/A
+            EPSILON                  = N/A
+            LR                       = N/A
+            
+TESTING:    TOKYO[2000-2018]
+            GREEDY POLICY
+
+
+***************************
+RESULTS
+***************************
+SEED: 161
+YEAR	AVG_RWD		VIOLATIONS
+                    DAY	BATT
+2000	 0.9		0	 0
+2001	 0.89		0	 0
+2002	 0.84		0	 0
+2003	 0.75		0	 0
+2004	 0.87		1	 0
+2005	 0.89		0	 0
+2006	 0.78		0	 0
+2007	 0.86		0	 0
+2008	 0.82		0	 0
+2009	 0.8		0	 0
+2010	 0.87		0	 0
+2011	 0.95		0	 0
+2012	 0.81		0	 0
+2013	 0.93		0	 0
+2014	 0.81		0	 0
+2015	 0.85		0	 0
+2016	 0.83		0	 0
+2017	 0.83		0	 0
+
+
+***************************
+DISCUSSION AND CONCLUSIONS
+***************************
+There's a higher average terminal reward comparable to A2
+Also more dynamic range of battery is used
+
+
+**************************************************************
+B
+**************************************************************
+                       
+HYPOTHESIS:
+Now training with different years to see if this enhances or degrades learning
+
+MODEL:
+B : INPUT->FC1->RELU->FC_OUT->OUTPUT
+LOSS : MSE
+
+LEARNING:   INIT_WEIGHT     = FC1 : KAIMING
+                              OUT : XAVIER
+            WIDTH           = 50
+            DEPTH           = 1 + 1
+            WEIGHT_DECAY    = NONE
+            LR              = 1e-4
+            UPDATE_FREQ     = 18 MONTHS
+            MEMORY          = 24 MONTHS
+            ITERATION       = 50
+            BATCH_SIZE      = 32
+            EPSILON         = 0.8             
+            GAMMA           = 0.9                
+            LAMBDA          = 0.95
+            
+TRAINING:   TOKYO[2000-2010]
+            BATTERY_RESET    = 0 %
+            REWARD_FUNC      = TYPE1
+                               violation_penalty = 3
+                               battery high limit penalty = -2
+                               battery low  limit penalty = -4
+                               R = [-1 to 2] bell curve
+            REWARD_BROADCAST = TRUE
+            
+            LAST TRAINING ITERATIONS = N/A
+            EPSILON                  = N/A
+            LR                       = N/A
+            
+TESTING:    TOKYO[2000-2018]
+            GREEDY POLICY
+
+
+***************************
+RESULTS
+***************************
+SEED: 161
+YEAR	AVG_RWD		VIOLATIONS
+                    DAY	BATT
+2000	 0.71		0	 0
+2001	 0.59		0	 0
+2002	 0.74		0	 0
+2003	 0.68		0	 0
+2004	 0.64		0	 0
+2005	 0.78		0	 0
+2006	 0.62		0	 0
+2007	 0.82		0	 0
+2008	 0.78		0	 0
+2009	 0.48		0	 0
+2010	 0.61		0	 0
+2011	 0.82		0	 0
+2012	 0.65		0	 0
+2013	 0.75		0	 0
+2014	 0.63		0	 0
+2015	 0.71		0	 0
+2016	 0.59		0	 0
+2017	 0.7		0	 0
+
+
+***************************
+DISCUSSION AND CONCLUSIONS
+***************************
+There's a lower average terminal reward but much NO violations as compared to A2
+Maybe this also indicates lower overfitting.
+
+
+**************************************************************
+A2
+**************************************************************
+                       
+HYPOTHESIS:
+As concluded from A, EPSILON was increased. This surprisingly lead to worse performance
+Checking by decreasing EPSILON
+
+MODEL:
+A2 : INPUT->FC1->RELU->FC_OUT->OUTPUT
+LOSS : MSE
+
+LEARNING:   INIT_WEIGHT     = FC1 : KAIMING
+                              OUT : XAVIER
+            WIDTH           = 50
+            DEPTH           = 1 + 1
+            WEIGHT_DECAY    = NONE
+            LR              = 1e-4
+            UPDATE_FREQ     = 18 MONTHS
+            MEMORY          = 24 MONTHS
+            ITERATION       = 50
+            BATCH_SIZE      = 32
+            EPSILON         = 0.8             
+            GAMMA           = 0.9                
+            LAMBDA          = 0.95
+            
+TRAINING:   TOKYO[2010]
+            BATTERY_RESET    = 0 %
+            REWARD_FUNC      = TYPE1
+                               violation_penalty = 3
+                               battery high limit penalty = -2
+                               battery low  limit penalty = -4
+                               R = [-1 to 2] bell curve
+            REWARD_BROADCAST = TRUE
+            
+            LAST TRAINING ITERATIONS = N/A
+            EPSILON                  = N/A
+            LR                       = N/A
+            
+TESTING:    TOKYO[2000-2018]
+            GREEDY POLICY
+
+
+***************************
+RESULTS
+***************************
+SEED: 161
+YEAR	AVG_RWD		VIOLATIONS
+                    DAY	BATT
+2000	 0.92		0	 0
+2001	 0.94		0	 0
+2002	 0.88		1	 0
+2003	 0.87		1	 0
+2004	 0.88		0	 0
+2005	 0.89		0	 0
+2006	 0.87		0	 0
+2007	 0.89		1	 0
+2008	 0.89		0	 0
+2009	 0.81		0	 0
+2010	 0.86		0	 0
+2011	 0.97		0	 0
+2012	 0.84		0	 0
+2013	 0.91		0	 0
+2014	 0.83		0	 0
+2015	 0.83		0	 0
+2016	 0.85		0	 0
+2017	 0.9		0	 0
+
+
+***************************
+DISCUSSION AND CONCLUSIONS
+***************************
+There's a lower average terminal reward but much less violations.
+Maybe this indicates lower overfitting.
 
 
 **************************************************************
@@ -38,7 +423,7 @@ LEARNING:   INIT_WEIGHT     = FC1 : KAIMING
             WIDTH           = 50
             DEPTH           = 1 + 1
             WEIGHT_DECAY    = NONE
-            LR              = 1E-5
+            LR              = 1e-4
             UPDATE_FREQ     = 18 MONTHS
             MEMORY          = 24 MONTHS
             ITERATION       = 50
@@ -47,7 +432,7 @@ LEARNING:   INIT_WEIGHT     = FC1 : KAIMING
             GAMMA           = 0.9                
             LAMBDA          = 0.95
             
-TRAINING:   TOKYO[2009]
+TRAINING:   TOKYO[2010]
             BATTERY_RESET    = 0 %
             REWARD_FUNC      = TYPE1
                                violation_penalty = 3
