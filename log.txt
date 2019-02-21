@@ -1,23 +1,25 @@
 A*
 |
-|------>A_WT_DECAY: L2 Loss (1e-2)--->XXXXXXXXXX----------------------------------------------SEED TEST: ????
+|--->A_WT_DECAY: L2 Loss (1e-2)--->worse performance than A*
 |
 |--> A1: EPSILON SCHEDULING--------------------> did not help
 |--> A1_alt: Alternate EPSILON SCHEDULING-O-----> did not help
 |--> A2*: EPSILON = 0.8------------------------> much better performance in terms of violations----------------------SEED TEST: FAIL
-|    |--> A2_WT_DECAY*: L2 Loss (1e-2)--->XXXXXXXXXXXX---------------------------------------------------------------SEED TEST: ????
+|    |
+|    |--> A2_WT_DECAY*: L2 Loss (1e-2)--->no violations, lesser average reward, better learning curve----------------SEED TEST: 7/10
+|
 |--> A3: EPSILON = 0.98------------------------> did not help at all
 |--> A4: EPSILON = 0.7 ------------------------> better than A3, not better than A2
 |
 |
 B*-- EPSILON = 0.8, TRAIN: TOKYO[2000-2010]----> much better performance than A2-------------------------------------SEED TEST: FAIL
 |
-|------>B_WT_DECAY: WIDTH = 100, L2 Loss (1e-2)---> much better than B*----------------------------------------------SEED TEST: ????
+|------>B_WT_DECAY: WIDTH = 50, L2 Loss (1e-2)---> much better than B*-----------------------------------------------SEED TEST: 7/10
 |
 |--> B1:  WIDTH = 20------> unable to learn, weights explode
 |--> B2*: WIDTH = 100----> higher terminal rewards than B, more dynamic range in battery levels----------------------SEED TEST: FAIL
 |    |
-|    |--> B2_WT_DECAY*: WIDTH = 100, L2 Loss (1e-2)--->much better than B2-------------------------------------------SEED TEST: ????
+|    |--> B2_WT_DECAY*: WIDTH = 100, L2 Loss (1e-2)--->much better than B2-------------------------------------------SEED TEST: 6/10
 |
 |--> B3:  SIGMOID (50)----> better than B1 but much worse than B2, longer to train
 |--> B4:  SIGMOID (100)---> not good at all
@@ -52,7 +54,12 @@ C--WIDTH = 100, L2 Loss (1e-4), LR SCHEDULING [3,0,5]----------------> not as go
 |--> C4-- LR SCHEDULING [2,-0.8, 0]----> not better than C3
 |--> C3A- LR SCHEDULING [2,0,0], WT_DECAY = 1e-3----> doesn't help. Weights explode and performance decreases
 |--> C3B- LR SCHEDULING [2,0,0], WT_DECAY = 1e-1----> weights don't explode but bad performance. Batt levels approach ceilings
-|--> C3C*- LR SCHEDULING [2,0,0], WT_DECAY = 1e-2----> very good performance. No violations but low average reward than C3-------SEED TEST: FAIL
+|--> C3C*- LR SCHEDULING [2,0,0], WT_DECAY = 1e-2----> very good performance. No violations but low average reward than C3-------SEED TEST: 7/10
+     |
+     |-->C3C_norm:   norm_ENP = enp/(BMAX/2)---------------------> higher average rewards than C3C
+     |-->C3C_simple: enp = BOPT-batt-----------------------------> much worse***this should not happen. SHould be equivalent to C3C
+     |-->C3C_old:    norm_ENP = enp/(BMAX/2),enp = BOPT-batt----->
+
 
 
 
