@@ -27,6 +27,7 @@ B*-- EPSILON = 0.8, TRAIN: TOKYO[2000-2010]----> much better performance than A2
 |--> B12: EPSILON SCHEDULING-----------> no good performance
 |--> B13*: LR SCHEDULING---------------> lower average reward but good performance
 |--> B14: EPSILON and LR SCHEDULING----> Better than B12 but not as good as B13
+|--> B15: LR Sawtooth SCHEDULING-------> satisfactory but no better than B13
 
 C
 |

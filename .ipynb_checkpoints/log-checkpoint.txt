@@ -1,6 +1,7 @@
 A*
 |
 |--> A1: EPSILON SCHEDULING--------------------> did not help
+|--> A1_alt: Alternate EPSILON SCHEDULING-O-----> did not help
 |--> A2*: EPSILON = 0.8------------------------> much better performance in terms of violations
 |--> A3: EPSILON = 0.98------------------------> did not help at all
 |--> A4: EPSILON = 0.7 ------------------------> better than A3, not better than A2
@@ -23,13 +24,87 @@ B*-- EPSILON = 0.8, TRAIN: TOKYO[2000-2010]----> much better performance than A2
 |--> B8B: WIDTH = 100, L2 Loss(1e-4), LR = 1e-3---> lots of spikes with weight explosion, very bad performance
 |--> B8C: WIDTH = 100, L2 Loss(NONE), LR = 1e-3---> heavy weight expolision, very bad performance
 |
-|--> B12: EPSILON SCHEDULING----------->
-|--> B13: LR SCHEDULING---------------->
-|--> B14: EPSILON and LR SCHEDULING---->
+|--> B12: EPSILON SCHEDULING-----------> no good performance
+|--> B13*: LR SCHEDULING---------------> lower average reward but good performance
+|--> B14: EPSILON and LR SCHEDULING----> Better than B12 but not as good as B13
+|--> B15: LR Sawtooth SCHEDULING-------> satisfactory but no better than B13
 
 C
 |
 |
+**************************************************************
+B13
+**************************************************************
+                       
+HYPOTHESIS:
+Schedule LR rates so that the weights don't blow up too quickly
+
+MODEL:
+B13 : INPUT->FC1->RELU->FC_OUT->OUTPUT
+LOSS : MSE
+
+LEARNING:   INIT_WEIGHT     = FC1 : KAIMING
+                              OUT : XAVIER
+            WIDTH           = 100
+            DEPTH           = 1 + 1
+            WEIGHT_DECAY    = 1e-4
+            LR              = (0.3 to 1)*1e-04
+            UPDATE_FREQ     = 18 MONTHS
+            MEMORY          = 24 MONTHS
+            ITERATION       = 50
+            BATCH_SIZE      = 32
+            EPSILON         = 0.8             
+            GAMMA           = 0.9                
+            LAMBDA          = 0.95
+            
+TRAINING:   TOKYO[2000-2010]
+            BATTERY_RESET    = 0 %
+            REWARD_FUNC      = TYPE1
+                               violation_penalty = 3
+                               battery high limit penalty = -2
+                               battery low  limit penalty = -4
+                               R = [-1 to 2] bell curve
+            REWARD_BROADCAST = TRUE
+            
+            LAST TRAINING ITERATIONS = N/A
+            EPSILON                  = N/A
+            LR                       = N/A
+            
+TESTING:    TOKYO[2000-2018]
+            GREEDY POLICY
+
+
+***************************
+RESULTS
+***************************
+SEED: 161
+YEAR	AVG_RWD		VIOLATIONS
+                    DAY	BATT
+2000	 0.89		0	 0
+2001	 0.92		0	 0
+2002	 0.91		0	 0
+2003	 0.8		3	 0
+2004	 0.89		1	 0
+2005	 0.95		0	 0
+2006	 0.88		0	 0
+2007	 0.96		1	 0
+2008	 0.92		0	 0
+2009	 0.81		0	 0
+2010	 0.9		0	 0
+2011	 1.02		0	 0
+2012	 0.89		0	 0
+2013	 1.0		0	 0
+2014	 0.86		0	 0
+2015	 0.91		0	 0
+2016	 0.89		0	 0
+2017	 0.87		0	 0
+
+
+***************************
+DISCUSSION AND CONCLUSIONS
+***************************
+There's a higher average terminal reward comparable to A2 (higher than B2)
+
 
 **************************************************************
 B8
